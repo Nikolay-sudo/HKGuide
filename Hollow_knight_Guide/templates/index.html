@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Hollow Knight Wiki | Void Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="void-background"></div>
+
+<header>
+    <h1 class="glitch-title">HOLLOW KNIGHT</h1>
+    <p>МЕЖДУ ПУСТОТОЙ И ДУШОЙ</p>
+</header>
+
+<div class="menu-container">
+    <a href="/charms" class="hk-btn" onmousemove="spawnSoul(event)">АМУЛЕТЫ</a>
+    <a href="/slots" class="hk-btn" onmousemove="spawnSoul(event)">ЯЧЕЙКИ АМУЛЕТОВ</a>
+    <a href="/vessels" class="hk-btn" onmousemove="spawnSoul(event)">ОСКОЛКИ СОСУДА</a>
+    <a href="/masks" class="hk-btn" onmousemove="spawnSoul(event)">ОСКОЛКИ МАСОК</a>
+    <a href="/abilities" class="hk-btn" onmousemove="spawnSoul(event)">СПОСОБНОСТИ</a>
+    <a href="/enemies" class="hk-btn" onmousemove="spawnSoul(event)">ВРАГИ</a>
+    <a href="/endings" class="hk-btn" onmousemove="spawnSoul(event)">КОНЦОВКИ</a>
+</div>
+
+<script>
+    // Функция создания эффекта Души/Пустоты
+    function spawnSoul(e) {
+        const btn = e.target;
+        const soul = document.createElement('div');
+        soul.classList.add('soul-particle');
+
+        // Случайный цвет: белый (Душа) или черный (Пустота)
+        const isVoid = Math.random() > 0.5;
+        soul.style.background = isVoid ? '#000' : '#fff';
+        soul.style.boxShadow = isVoid ? '0 0 10px #333' : '0 0 10px #fff';
+
+        // Позиция частицы
+        const rect = btn.getBoundingClientRect();
+        soul.style.left = (e.clientX + (Math.random() - 0.5) * 30) + 'px';
+        soul.style.top = (e.clientY + (Math.random() - 0.5) * 30) + 'px';
+
+        document.body.appendChild(soul);
+
+        // Удаление частицы через секунду
+        setTimeout(() => soul.remove(), 1000);
+    }
+</script>
+
+</body>
+</html>
