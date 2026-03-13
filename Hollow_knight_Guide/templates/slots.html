@@ -2,11 +2,87 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Раздел</title>
+    <title>Ячейки | Wiki</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Стили из твоего идеального кода */
+        .charms-list-container::-webkit-scrollbar { width: 8px; }
+        .charms-list-container::-webkit-scrollbar-track { background: #000; }
+        .charms-list-container::-webkit-scrollbar-thumb { background: #333; border: 1px solid #fff; }
+        .charms-list-container {
+            max-width: 800px; margin: 20px auto;
+            max-height: 75vh; overflow-y: scroll; padding-right: 20px;
+        }
+        .hk-btn-charm {
+            display: flex; align-items: center; width: 100%;
+            margin-bottom: 12px; cursor: pointer;
+            background: #050505; border: 1px solid #222; padding: 15px;
+            transition: 0.2s;
+        }
+        .hk-btn-charm:hover { border-color: #fff; background: #111; }
+        .modal {
+            display: none; position: fixed; z-index: 10000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98);
+        }
+        .modal-content {
+            background: #000; margin: 2% auto; padding: 30px;
+            border: 1px solid #fff; max-width: 850px; color: #fff;
+        }
+        .close { color: #fff; float: right; font-size: 30px; cursor: pointer; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+        .tutorial-box {
+            background: #080808; border-left: 3px solid #fff;
+            padding: 15px; margin-top: 10px; color: #eee;
+            font-size: 0.9em; line-height: 1.5;
+        }
+        .label { color: #fff; font-weight: bold; font-size: 0.7em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
+    </style>
 </head>
 <body>
-    <h1>Раздел: Амулеты</h1> <p>Контент скоро появится...</p>
-    <a href="/" class="btn">Назад в меню</a>
+<div class="void-background"></div>
+<header>
+    <h1 class="glitch-title">ЯЧЕЙКИ</h1>
+    <a href="/" class="hk-btn" style="width:100px; border-color:#fff; color:#fff;">НАЗАД</a>
+</header>
+
+<div class="charms-list-container">
+    {% for slot in slots %}
+    <div class="hk-btn-charm" onclick="openM('{{ slot.id }}')">
+        <img src="{{ slot.img }}" onerror="this.src='https://via.placeholder.com/45?text=S'" style="width:45px; margin-right:20px;">
+        <div style="flex-grow:1; text-align:left;">
+            <div style="color:#fff; font-size:1.1em;">{{ slot.name }}</div>
+            <div style="color:#555; font-size:0.8em;">{{ slot.short_desc }}</div>
+        </div>
+    </div>
+
+    <div id="m-{{ slot.id }}" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeM('{{ slot.id }}')">&times;</span>
+            <h2 style="letter-spacing: 5px;">{{ slot.name }}</h2>
+            <div class="detail-grid">
+                <div style="border: 1px solid #222;">
+                    <img src="{{ slot.map }}" onerror="this.src='https://via.placeholder.com/400x300?text=КАРТА+ЯЧЕЙКИ'" style="width:100%;">
+                </div>
+                <div style="text-align: left;">
+                    <div class="label">ОПИСАНИЕ</div>
+                    <p style="color: #ccc; margin-bottom: 20px;">{{ slot.full_desc }}</p>
+
+                    <div class="label">ТУТОРИАЛ ПОЛУЧЕНИЯ</div>
+                    <div class="tutorial-box">
+                        {{ slot.how_to_get }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function openM(id) { document.getElementById('m-'+id).style.display = "block"; }
+    function closeM(id) { document.getElementById('m-'+id).style.display = "none"; }
+    window.onclick = function(e) { if(e.target.className=='modal') e.target.style.display='none'; }
+</script>
 </body>
 </html>
