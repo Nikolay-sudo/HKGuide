@@ -1,28 +1,27 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Hollow Knight Wiki</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Hollow Wiki</title>
+    <style>
+        body { background: #000; color: #fff; font-family: 'Georgia', serif; text-align: center; }
+        .menu { display: flex; flex-direction: column; gap: 15px; max-width: 350px; margin: 80px auto; }
+        a {
+            color: #888; text-decoration: none; border: 1px solid #1a1a1a;
+            padding: 20px; transition: 0.5s; letter-spacing: 4px;
+            background: rgba(10,10,10,0.5);
+        }
+        a:hover { background: #fff; color: #000; box-shadow: 0 0 20px #fff; }
+        h1 { font-size: 4em; letter-spacing: 15px; margin-top: 100px; }
+    </style>
 </head>
 <body>
-
-<div class="void-background"></div>
-
-<header>
-    <h1 class="glitch-title">HOLLOW KNIGHT</h1>
-    <p>МЕЖДУ ПУСТОТОЙ И ДУШОЙ</p>
-</header>
-
-<div class="menu-container">
-    <a href="/charms" class="hk-btn">АМУЛЕТЫ</a>
-    <a href="/slots" class="hk-btn">ЯЧЕЙКИ АМУЛЕТОВ</a>
-    <a href="/vessels" class="hk-btn">ОСКОЛКИ СОСУДА</a>
-    <a href="/masks" class="hk-btn">ОСКОЛКИ МАСОК</a>
-    <a href="/abilities" class="hk-btn">СПОСОБНОСТИ</a>
-    <a href="/enemies" class="hk-btn">ВРАГИ</a>
-    <a href="/endings" class="hk-btn">КОНЦОВКИ</a>
-</div>
-
+    <h1>HOLLOW WIKI</h1>
+    <div class="menu">
+        <a href="/charms">АМУЛЕТЫ</a>
+        <a href="/notches">ЯЧЕЙКИ</a>
+        <a href="/enemies_menu">ВРАГИ</a> <a href="/masks">МАСКИ</a>
+        <a href="/vessels">СОСУДЫ</a>
+    </div>
 </body>
 </html>

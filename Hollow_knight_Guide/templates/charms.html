@@ -1,91 +1,34 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Wiki | Hollow Knight</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>{{ title }}</title>
     <style>
-        .charms-list-container::-webkit-scrollbar { width: 8px; }
-        .charms-list-container::-webkit-scrollbar-track { background: #000; }
-        .charms-list-container::-webkit-scrollbar-thumb { background: #333; border: 1px solid #fff; }
-        .charms-list-container {
-            max-width: 800px; margin: 20px auto;
-            max-height: 75vh; overflow-y: scroll; padding-right: 20px;
-        }
-        .hk-btn-charm {
-            display: flex; align-items: center; width: 100%;
-            margin-bottom: 12px; cursor: pointer;
-            background: #050505; border: 1px solid #222; padding: 15px;
-            transition: 0.2s;
-        }
-        .hk-btn-charm:hover { border-color: #fff; background: #111; }
-        .modal {
-            display: none; position: fixed; z-index: 10000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98);
-        }
-        .modal-content {
-            background: #000; margin: 2% auto; padding: 30px;
-            border: 1px solid #fff; max-width: 850px; color: #fff;
-        }
-        .close { color: #fff; float: right; font-size: 30px; cursor: pointer; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .tutorial-box {
-            background: #080808; border-left: 3px solid #fff;
-            padding: 15px; margin-top: 10px; color: #eee;
-            font-size: 0.9em; line-height: 1.5;
-        }
-        .label { color: #fff; font-weight: bold; font-size: 0.7em; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; opacity: 0.6; }
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; }
+        .item { background: #111; border: 1px solid #333; margin: 10px auto; padding: 20px; width: 80%; cursor: pointer; }
+        .item:hover { border-color: #fff; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
+        .modal-content { background: #000; border: 1px solid #555; margin: 15% auto; padding: 30px; width: 400px; }
     </style>
 </head>
 <body>
-<div class="void-background"></div>
-<header>
-    <h1 class="glitch-title">ИНФОРМАЦИЯ</h1>
-    <a href="/" class="hk-btn" style="width:100px; border-color:#fff; color:#fff; text-decoration:none; display:inline-block; text-align:center;">НАЗАД</a>
-</header>
-
-<div class="charms-list-container">
-    {% set items = charms if charms else slots %}
-    {% for item in items %}
-    <div class="hk-btn-charm" onclick="openM('{{ item.id }}')">
-        <img src="{{ item.img }}" onerror="this.src='https://via.placeholder.com/45?text=?'" style="width:45px; margin-right:20px;">
-        <div style="flex-grow:1; text-align:left;">
-            <div style="color:#fff; font-size:1.1em;">{{ item.name }}</div>
-            <div style="color:#555; font-size:0.8em;">{{ item.short_desc }}</div>
+    <h1>{{ title }}</h1>
+    <a href="/" style="color: #666;">← НАЗАД</a>
+    <div style="margin-top: 30px;">
+        {% for item in items %}
+        <div class="item" onclick="document.getElementById('{{ item.id }}').style.display='block'">
+            <h3>{{ item.name }}</h3>
         </div>
-        {% if item.slots is defined %}
-            <div style="color:#333; font-size:1.3em; font-weight:bold;">{{ item.slots }} ●</div>
-        {% endif %}
-    </div>
 
-    <div id="m-{{ item.id }}" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeM('{{ item.id }}')">&times;</span>
-            <h2 style="letter-spacing: 5px; text-transform: uppercase;">{{ item.name }}</h2>
-            <div class="detail-grid">
-                <div style="border: 1px solid #222;">
-                    <img src="{{ item.map }}" onerror="this.src='https://via.placeholder.com/400x300?text=КАРТА+МЕСТНОСТИ'" style="width:100%;">
-                </div>
-                <div style="text-align: left;">
-                    <div class="label">ЭФФЕКТ</div>
-                    <p style="color: #ccc; margin-bottom: 20px;">{{ item.full_desc }}</p>
-                    <div class="label">ТУТОРИАЛ ПОЛУЧЕНИЯ</div>
-                    <div class="tutorial-box">{{ item.how_to_get }}</div>
-                    {% if item.slots is defined %}
-                        <p style="margin-top: 20px; font-weight: bold;">ЯЧЕЕК: {{ item.slots }} ●</p>
-                    {% endif %}
-                </div>
+        <div id="{{ item.id }}" class="modal" onclick="this.style.display='none'">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <h2>{{ item.name }}</h2>
+                <hr>
+                <p><strong>КАК ПОЛУЧИТЬ:</strong></p>
+                <p>{{ item.how_to_get }}</p>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-
-<script>
-    function openM(id) { document.getElementById('m-'+id).style.display = "block"; }
-    function closeM(id) { document.getElementById('m-'+id).style.display = "none"; }
-    window.onclick = function(e) { if(e.target.className=='modal') e.target.style.display='none'; }
-</script>
 </body>
 </html>
