@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта світу — Hollow Wiki</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #d1d1d1;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            letter-spacing: 8px;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255,255,255,0.6);
+            margin: 15px 0;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-style: italic;
+            font-size: 1em;
+            transition: 0.4s;
+            letter-spacing: 2px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            padding: 12px 24px;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+        
+        .back-btn:hover {
+            color: #fff;
+            text-shadow: 0 0 10px #fff;
+            border-color: #fff;
+            background: rgba(20,20,20,0.95);
+        }
+
+        .map-viewport {
+            width: 100%;
+            height: calc(100vh - 90px);
+            overflow: hidden;
+            position: relative;
+            background: #0a0a0a;
+            cursor: grab;
+        }
+        
+        .map-viewport:active {
+            cursor: grabbing;
+        }
+
+        .map-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
+            will-change: transform;
+        }
+
+        .map-image {
+            display: block;
+            width: 5000px;
+            height: 3400px;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+
+        .marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #000;
+            border-radius: 50%;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s ease;
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(255,255,255,0.6);
+        }
+        
+        .marker:hover {
+            background: #ffcc00;
+            transform: translate(-50%, -50%) scale(1.4);
+            box-shadow: 0 0 25px rgba(255,204,0,0.9);
+            z-index: 101;
+        }
+        
+        .marker.boss {
+            background: rgba(255, 50, 50, 0.95);
+            box-shadow: 0 0 15px rgba(255,50,50,0.6);
+        }
+        
+        .marker.boss:hover {
+            background: #ff3333;
+            box-shadow: 0 0 25px rgba(255,50,50,0.9);
+        }
+        
+        .marker.item {
+            background: rgba(100, 200, 255, 0.95);
+            box-shadow: 0 0 15px rgba(100,200,255,0.6);
+        }
+        
+        .marker.item:hover {
+            background: #64c8ff;
+            box-shadow: 0 0 25px rgba(100,200,255,0.9);
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #666;
+            padding: 15px 20px;
+            border-radius: 5px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.9);
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+        
+        .tooltip-title {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .tooltip-desc {
+            font-size: 0.9em;
+            color: #aaa;
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+        }
+        
+        .control-btn {
+            background: rgba(15, 15, 15, 0.95);
+            border: 2px solid #555;
+            color: #ccc;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.3em;
+            font-family: 'Georgia', serif;
+            letter-spacing: 2px;
+            font-weight: bold;
+            border-radius: 4px;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .control-btn:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+            transform: scale(1.05);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .legend {
+            position: fixed;
+            top: 90px;
+            left: 20px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid #555;
+            border-radius: 4px;
+            padding: 18px;
+            z-index: 1000;
+            font-size: 0.95em;
+        }
+        
+        .legend-title {
+            color: #fff;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 10px 0;
+            color: #bbb;
+        }
+        
+        .legend-marker {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 3px solid #000;
+            flex-shrink: 0;
+        }
+
+        .zoom-level {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid #555;
+            border-radius: 4px;
+            padding: 12px 18px;
+            z-index: 1000;
+            color: #ccc;
+            font-size: 1em;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .marker-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .marker-modal.active {
+            display: flex;
+        }
+        
+        .marker-modal-content {
+            background: linear-gradient(145deg, #0f0f0f, #1a1a1a);
+            border: 3px solid #666;
+            border-radius: 8px;
+            padding: 45px;
+            max-width: 550px;
+            width: 90%;
+            box-shadow: 0 0 60px rgba(255,255,255,0.15);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .marker-modal-title {
+            font-size: 2.2em;
+            color: #fff;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            border-bottom: 3px solid #555;
+            padding-bottom: 18px;
+            text-transform: uppercase;
+        }
+        
+        .marker-modal-desc {
+            font-size: 1.15em;
+            color: #bbb;
+            line-height: 1.9;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+        
+        .marker-modal-position {
+            font-size: 0.95em;
+            color: #888;
+            margin-top: 25px;
+            padding-top: 18px;
+            border-top: 2px solid #333;
+        }
+        
+        .marker-modal-close {
+            background: rgba(30,30,30,0.95);
+            border: 2px solid #666;
+            border-radius: 4px;
+            color: #ccc;
+            padding: 14px 35px;
+            cursor: pointer;
+            margin-top: 30px;
+            font-family: 'Georgia', serif;
+            letter-spacing: 3px;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .marker-modal-close:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body>
+    <h1>КАРТА ХОЛЛОУНЕСТУ</h1>
+    <a href="/" class="back-btn">← ПОВЕРНУТИСЯ</a>
+
+    <div class="legend">
+        <div class="legend-title">ЛЕГЕНДА</div>
+        <div class="legend-item">
+            <div class="legend-marker" style="background: rgba(255, 255, 255, 0.95);"></div>
+            <span>Локації</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-marker" style="background: rgba(255, 50, 50, 0.95);"></div>
+            <span>Боси</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-marker" style="background: rgba(100, 200, 255, 0.95);"></div>
+            <span>Предмети</span>
+        </div>
+    </div>
+
+    <div class="map-viewport" id="viewport">
+        <div class="map-canvas" id="canvas">
+            <img src="{{ url_for('static', filename='images/bg_map.png') }}" 
+                 alt="Карта Холлоунесту" 
+                 class="map-image" 
+                 id="mapImage">
+            
+            <!-- Маркери локацій -->
+            <div class="marker" style="left: 30%; top: 25%;" 
+                 data-title="Бруднотовча" 
+                 data-desc="Стартова локація. Тут знаходяться головні магазини."></div>
+            
+            <div class="marker" style="left: 40%; top: 35%;" 
+                 data-title="Забуте роздоріжжя" 
+                 data-desc="Перша велика локація. Тут знаходиться Фальшивий лицар."></div>
+            
+            <div class="marker" style="left: 65%; top: 30%;" 
+                 data-title="Зелена стежка" 
+                 data-desc="Мальовнича локація з рослинністю. Бій з Хорнет."></div>
+            
+            <div class="marker" style="left: 50%; top: 15%;" 
+                 data-title="Кришталевий пік" 
+                 data-desc="Небезпечна локація з кришталами та лазерами."></div>
+            
+            <div class="marker" style="left: 20%; top: 45%;" 
+                 data-title="Грибові пустощі" 
+                 data-desc="Темна локація з грибами та спорами."></div>
+            
+            <div class="marker" style="left: 55%; top: 50%;" 
+                 data-title="Місто сліз" 
+                 data-desc="Занедбане місто. Багато секретів та босів."></div>
+            
+            <div class="marker" style="left: 35%; top: 60%;" 
+                 data-title="Королівські стоки" 
+                 data-desc="Каналізація під містом. Гнойовий захисник."></div>
+            
+            <div class="marker" style="left: 75%; top: 45%;" 
+                 data-title="Край світу" 
+                 data-desc="Східний кордон світу. Другий бій з Хорнет."></div>
+            
+            <div class="marker" style="left: 50%; top: 75%;" 
+                 data-title="Безодня" 
+                 data-desc="Найглибша точка світу. Місце народження."></div>
+            
+            <!-- Маркери босів -->
+            <div class="marker boss" style="left: 42%; top: 38%;" 
+                 data-title="Фальшивий лицар" 
+                 data-desc="Перший обов'язковий бос. Забуте роздоріжжя."></div>
+            
+            <div class="marker boss" style="left: 68%; top: 32%;" 
+                 data-title="Хорнет (1)" 
+                 data-desc="Хорнет-захисниця. Зелена стежка."></div>
+            
+            <div class="marker boss" style="left: 78%; top: 47%;" 
+                 data-title="Хорнет (2)" 
+                 data-desc="Хорнет-вартовий. Край світу."></div>
+            
+            <div class="marker boss" style="left: 57%; top: 52%;" 
+                 data-title="Майстер душ" 
+                 data-desc="Бос Святилища душ. Місто сліз."></div>
+            
+            <div class="marker boss" style="left: 37%; top: 62%;" 
+                 data-title="Гнойовий захисник" 
+                 data-desc="Лицар короля. Королівські стоки."></div>
+            
+            <div class="marker boss" style="left: 25%; top: 47%;" 
+                 data-title="Лорди Богомолів" 
+                 data-desc="Три швидких воїни. Село богомолів."></div>
+            
+            <!-- Маркери предметів -->
+            <div class="marker item" style="left: 70%; top: 35%;" 
+                 data-title="Накидка метелика" 
+                 data-desc="Здібність ривка. Після бою з Хорнет (1)."></div>
+            
+            <div class="marker item" style="left: 27%; top: 49%;" 
+                 data-title="Клішня богомола" 
+                 data-desc="Стрибки від стін. Після перемоги над Лордами."></div>
+            
+            <div class="marker item" style="left: 52%; top: 17%;" 
+                 data-title="Кришталеве серце" 
+                 data-desc="Супер-ривок. Кришталевий пік."></div>
+            
+            <div class="marker item" style="left: 52%; top: 77%;" 
+                 data-title="Тіньовий ривок" 
+                 data-desc="Ривок крізь ворогів. Безодня."></div>
+            
+            <div class="marker item" style="left: 80%; top: 48%;" 
+                 data-title="Монарші крила" 
+                 data-desc="Подвійний стрибок. Давній котлован."></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="zoomIn()">+</button>
+        <button class="control-btn" onclick="zoomOut()">−</button>
+        <button class="control-btn" onclick="resetView()">⟲</button>
+    </div>
+
+    <div class="zoom-level" id="zoomLevel">100%</div>
+
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title" id="tooltipTitle"></div>
+        <div class="tooltip-desc" id="tooltipDesc"></div>
+    </div>
+
+    <div class="marker-modal" id="markerModal">
+        <div class="marker-modal-content">
+            <div class="marker-modal-title" id="modalTitle"></div>
+            <div class="marker-modal-desc" id="modalDesc"></div>
+            <div class="marker-modal-position" id="modalPosition"></div>
+            <button class="marker-modal-close" onclick="closeModal()">ЗАКРИТИ</button>
+        </div>
+    </div>
+
+    <script>
+        // Константи
+        const IMAGE_WIDTH = 5000;
+        const IMAGE_HEIGHT = 3400;
+        const MIN_SCALE = 0.15;
+        const MAX_SCALE = 4;
+        const ZOOM_STEP = 0.25;
+
+        // Елементи
+        const viewport = document.getElementById('viewport');
+        const canvas = document.getElementById('canvas');
+        const mapImage = document.getElementById('mapImage');
+        const tooltip = document.getElementById('tooltip');
+        const tooltipTitle = document.getElementById('tooltipTitle');
+        const tooltipDesc = document.getElementById('tooltipDesc');
+        const zoomLevelDisplay = document.getElementById('zoomLevel');
+        const markerModal = document.getElementById('markerModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalPosition = document.getElementById('modalPosition');
+
+        // Стан
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let dragStartTranslateX = 0;
+        let dragStartTranslateY = 0;
+
+        // Ініціалізація при завантаженні
+        function init() {
+            const viewportWidth = viewport.offsetWidth;
+            const viewportHeight = viewport.offsetHeight;
+            
+            // Обчислюємо початковий масштаб щоб вся карта поміщалась
+            const scaleX = viewportWidth / IMAGE_WIDTH;
+            const scaleY = viewportHeight / IMAGE_HEIGHT;
+            scale = Math.min(scaleX, scaleY) * 0.85;
+            
+            // Центруємо карту
+            translateX = (viewportWidth - IMAGE_WIDTH * scale) / 2;
+            translateY = (viewportHeight - IMAGE_HEIGHT * scale) / 2;
+            
+            updateTransform();
+        }
+
+        // Оновлення трансформації
+        function updateTransform() {
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            zoomLevelDisplay.textContent = Math.round(scale * 100) + '%';
+        }
+
+        // Обробники перетягування
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('marker')) return;
+            
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            dragStartTranslateX = translateX;
+            dragStartTranslateY = translateY;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+            
+            translateX = dragStartTranslateX + dx;
+            translateY = dragStartTranslateY + dy;
+            
+            updateTransform();
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Зум колесом миші
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+            const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale + delta));
+            
+            if (newScale === scale) return;
+            
+            // Зум до курсора
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Точка на канвасі до зуму
+            const canvasX = (mouseX - translateX) / scale;
+            const canvasY = (mouseY - translateY) / scale;
+            
+            // Оновлюємо масштаб
+            scale = newScale;
+            
+            // Коригуємо позицію щоб точка залишилась під курсором
+            translateX = mouseX - canvasX * scale;
+            translateY = mouseY - canvasY * scale;
+            
+            updateTransform();
+        });
+
+        // Кнопки керування
+        function zoomIn() {
+            const newScale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
+            if (newScale === scale) return;
+            
+            const centerX = viewport.offsetWidth / 2;
+            const centerY = viewport.offsetHeight / 2;
+            
+            const canvasX = (centerX - translateX) / scale;
+            const canvasY = (centerY - translateY) / scale;
+            
+            scale = newScale;
+            translateX = centerX - canvasX * scale;
+            translateY = centerY - canvasY * scale;
+            
+            updateTransform();
+        }
+
+        function zoomOut() {
+            const newScale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
+            if (newScale === scale) return;
+            
+            const centerX = viewport.offsetWidth / 2;
+            const centerY = viewport.offsetHeight / 2;
+            
+            const canvasX = (centerX - translateX) / scale;
+            const canvasY = (centerY - translateY) / scale;
+            
+            scale = newScale;
+            translateX = centerX - canvasX * scale;
+            translateY = centerY - canvasY * scale;
+            
+            updateTransform();
+        }
+
+        function resetView() {
+            init();
+        }
+
+        function closeModal() {
+            markerModal.classList.remove('active');
+        }
+
+        // Обробка маркерів
+        const markers = document.querySelectorAll('.marker');
+        markers.forEach(marker => {
+            // Тултіп
+            marker.addEventListener('mouseenter', () => {
+                tooltipTitle.textContent = marker.dataset.title;
+                tooltipDesc.textContent = marker.dataset.desc;
+                tooltip.classList.add('show');
+            });
+
+            marker.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.clientX + 20) + 'px';
+                tooltip.style.top = (e.clientY + 20) + 'px';
+            });
+
+            marker.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
+            });
+
+            // Клік - модальне вікно
+            marker.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                modalTitle.textContent = marker.dataset.title;
+                modalDesc.textContent = marker.dataset.desc;
+                modalPosition.textContent = `Позиція: ${marker.style.left} / ${marker.style.top}`;
+                
+                markerModal.classList.add('active');
+                tooltip.classList.remove('show');
+            });
+        });
+
+        // Закриття модального вікна
+        markerModal.addEventListener('click', (e) => {
+            if (e.target === markerModal) closeModal();
+        });
+
+        // Запуск після завантаження
+        window.addEventListener('load', init);
+        window.addEventListener('resize', init);
+    </script>
+</body>
+</html>

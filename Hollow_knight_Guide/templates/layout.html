@@ -71,7 +71,7 @@
 </head>
 <body>
     <h1>{{ title }}</h1>
-    <a href="/" class="back-btn">← ГРЯЗЕМУТ</a>
+    <a href="/" class="back-btn">← БРУДНОТОВЧА</a>
 
     <div class="container">
         {% for item in items %}
@@ -82,9 +82,9 @@
         <div id="m-{{ item.id }}" class="modal" onclick="this.style.display='none'">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="modal-title">{{ item.name }}</div>
-                <span class="guide-label">Туториал по получению:</span>
+                <span class="guide-label">Туторіал по отриманню:</span>
                 <div class="guide-text">{{ item.how_to_get }}</div>
-                <div class="close-hint">Кликните в любом месте, чтобы закрыть</div>
+                <div class="close-hint">Клікніть у будь-якому місці, щоб закрити</div>
             </div>
         </div>
         {% endfor %}
